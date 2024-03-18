@@ -17,7 +17,7 @@ const persistedContactReducer = persistReducer(
   {
     key: 'contact',
     storage,
-    whitelost: ['items'],
+    whitelist: ['items'],
   },
   contactsReducer
 );
