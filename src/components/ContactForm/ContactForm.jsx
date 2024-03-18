@@ -3,8 +3,8 @@ import { useId } from 'react';
 import css from './ContactForm.module.css';
 import * as Yup from 'yup';
 import { nanoid } from 'nanoid';
-import { useDispatch } from 'react-redux';
-import { addContact } from '../../redux/contactsSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact, selectContacts } from '../../redux/contactsSlice';
 
 const initialValues = {
   name: '',
@@ -22,21 +22,30 @@ const contactSchema = Yup.object().shape({
     .required('Required!'),
 });
 
-export default function ContactForm({ onAdd }) {
+export default function ContactForm() {
   const dispatch = useDispatch();
-
+  const contacts = useSelector(selectContacts);
   const contactNameFieldId = useId();
   const numberFieldId = useId();
 
   const handleSubmit = (values, actions) => {
-    onAdd({
-      name: values.name,
-      number: values.number,
-      id: nanoid(),
-    });
-    dispatch(addContact(values));
+    const isDuplicateNumber = contacts.some(
+      contact => contact.number === values.number
+    );
+    if (isDuplicateNumber) {
+      alert('This phone number already exists!');
+    } else {
+      dispatch(
+        addContact({
+          name: values.name,
+          number: values.number,
+          id: nanoid(),
+        })
+      );
+    }
     actions.resetForm();
   };
+
   return (
     <Formik
       initialValues={initialValues}
@@ -51,7 +60,7 @@ export default function ContactForm({ onAdd }) {
           <Field
             type="text"
             name="name"
-            id="contactNameFieldId"
+            id={contactNameFieldId}
             className={css.input}
           />
           <ErrorMessage className={css.error} name="name" as="span" />
@@ -63,7 +72,7 @@ export default function ContactForm({ onAdd }) {
           <Field
             type="text"
             name="number"
-            id="numberFieldId"
+            id={numberFieldId}
             className={css.input}
           />
           <ErrorMessage className={css.error} name="number" as="span" />
